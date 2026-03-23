@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         String       @default("VIEWER")
+  avatarColor  String       @default("#6366f1")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  documents    Document[]   @relation("DocumentOwner")
+  permissions  Permission[]
+  auditLogs    AuditLog[]
+  versions     DocumentVersion[]
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  name         String
+  description  String?
+  mimeType     String
+  size         BigInt
+  s3Key        String       @unique
+  s3Bucket     String
+  encryptedKey String?
+  isDeleted    Boolean      @default(false)
+  deletedAt    DateTime?
+
+  ownerId      String
+  owner        User         @relation("DocumentOwner", fields: [ownerId], references: [id])
+
+  permissions  Permission[]
+  versions     DocumentVersion[]
+  tags         DocumentTag[]
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([ownerId])
+  @@index([isDeleted])
+}
+
+model DocumentVersion {
+  id             String   @id @default(uuid())
+  versionNumber  Int
+  s3Key          String   @unique
+  size           BigInt
+  changeNote     String?
+
+  documentId     String
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdById    String
+  createdBy      User     @relation(fields: [createdById], references: [id])
+
+  createdAt      DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+}
+
+model Permission {
+  id         String         @id @default(uuid())
+  role       String         @default("VIEWER")
+
+  documentId String
+  document   Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([documentId, userId])
+  @@index([userId])
+}
+
+model Tag {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  color     String        @default("#6366f1")
+  createdAt DateTime      @default(now())
+
+  documents DocumentTag[]
+}
+
+model DocumentTag {
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  tagId      String
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     String?
+  ipAddress    String?
+  userAgent    String?
+
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
