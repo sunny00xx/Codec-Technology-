@@ -1,0 +1,8 @@
+[Seed] Waiting for database initialization...
+[DB] Database initialized successfully at: C:\6 sem\intership\codec\Smart Inventory & Supply Chain Management System\backend\data\nexusflow.db
+[Seed] Starting database seeding...
+[Seed] Error during seeding: Error: FOREIGN KEY constraint failed
+    at e.handleError (C:\6 sem\intership\codec\Smart Inventory & Supply Chain Management System\backend\node_modules\sql.js\dist\sql-wasm.js:90:308)
+    at c.step (C:\6 sem\intership\codec\Smart Inventory & Supply Chain Management System\backend\node_modules\sql.js\dist\sql-wasm.js:80:405)
+    at Object.run (C:\6 sem\intership\codec\Smart Inventory & Supply Chain Management System\backend\src\database.js:37:12)
+    at C:\6 sem\intership\codec\Smart Inventory & Supply Chain Management System\backend\src\seed.js:31:168
